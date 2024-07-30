@@ -23,7 +23,7 @@ class DataTransformation:
     
     def get_data_transformer_obj(self):
         try:
-            num_col=['reading_score', 'writing_score']
+            num_col=["writing_score", "reading_score"]
             cat_col=['gender', 'race_ethnicity', 'parental_level_of_education', 'lunch', 'test_preparation_course']
 
             num_pipeline=Pipeline(
@@ -35,7 +35,7 @@ class DataTransformation:
             cat_pipeline=Pipeline(
                 steps=[
                     ('imputer',SimpleImputer(strategy='most_frequent')),
-                    ('encoder',OneHotEncoder()),
+                    ('encoder',OneHotEncoder(handle_unknown='ignore')),
                     ('scaler',StandardScaler(with_mean=False))
                 ]
             )
@@ -50,6 +50,7 @@ class DataTransformation:
             )
 
             return preprocessor
+        
         except Exception as e:
             raise CustomException(e,sys)
         
@@ -63,7 +64,7 @@ class DataTransformation:
             logging.info("obtained preprocessed obj")
 
             target_col='math_score'
-            num_col=['reading_score', 'writing_score']
+            num_col=["writing_score", "reading_score"]
 
             train_df_feature=train_df.drop(columns=[target_col],axis=1)
             train_df_target=train_df[target_col]
