@@ -11,6 +11,7 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from src.exception import CustomException
 from src.logger import logging
+from src.utils import save_object
 
 @dataclass
 class DataTransformationConfig:
@@ -29,12 +30,6 @@ class DataTransformation:
                 steps=[
                     ('imputer',SimpleImputer(strategy='median')),
                     ('scaler',StandardScaler(with_mean=False)),
-                    '''
-                    The reason that adding with_mean=False resolved my error is that the StandardScaler is subtracting the mean from each feature, which can result in some features having negative values. 
-                    However, StandardScaler() alone assumes that the features have positive values, which can cause issues when working with features that have negative values.
-                    By setting with_mean=False, the StandardScaler does not subtract the mean from each feature, and instead scales the features based on their variance. 
-                    This can help preserve the positive values of the features and avoid issues.
-                    '''
                 ]
             )
             cat_pipeline=Pipeline(
@@ -81,19 +76,19 @@ class DataTransformation:
             train_df_preprocess=preprocessing_obj.fit_transform(train_df_feature)
             test_df_preprocess=preprocessing_obj.transform(test_df_feature)
 
-            train_arr=np.c_[train_df_feature,np.array(train_df_target)]
-            test_arr=np.c_[test_df_feature,np.array(test_df_target)]
+            train_arr=np.c_[train_df_preprocess,np.array(train_df_target)]
+            test_arr=np.c_[test_df_preprocess,np.array(test_df_target)]
             logging.info("applied preprocess obj on train n test")
 
             save_object(
                 file_path=self.data_transformation_config.preprocessor_obj_file_path,
                 obj=preprocessing_obj
             )
+            logging.info('saved preprocess obj')
 
             return(
                 train_arr,
-                test_arr,
-                self.data_transformation_config.preprocessor_obj_file_path
+                test_arr
             )
         except Exception as e:
             raise CustomException(e,sys)
